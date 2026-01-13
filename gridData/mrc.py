@@ -96,7 +96,7 @@ class MRC(object):
         if filename is not None:
             self.filename = filename
         with mrcfile.open(filename) as mrc:
-            if not mrc.is_volume():                           #pragma: no cover
+            if mrc.data is None or len(mrc.data.shape) != 3:                           #pragma: no cover
                 raise ValueError(
                     "MRC file {} is not a volumetric density.".format(filename))
             self.header = h = mrc.header.copy()
