@@ -43,6 +43,12 @@ class MRC(object):
     ----------
     filename : str (optional)
        input file (or stream), can be compressed
+    is_volume : bool (optional)
+       Force input file to be interpreted as a volume. If None (default),
+       use the MRC file header. If True, force the file to be read as a
+       volume. If False, the file is intepreted as a 2D image stack and
+       raise a ValueError.
+        
 
     Raises
     ------
@@ -86,17 +92,22 @@ class MRC(object):
 
     """
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, is_volume=None):
         self.filename = filename
         if filename is not None:
-            self.read(filename)
+            self.read(filename, is_volume)
 
-    def read(self, filename):
+    def read(self, filename, is_volume=None):
         """Populate the instance from the MRC/CCP4 file *filename*."""
         if filename is not None:
             self.filename = filename
         with mrcfile.open(filename) as mrc:
-            if mrc.data is None or len(mrc.data.shape) != 3:                           #pragma: no cover
+            if is_volume is None:
+                is_volume = mrc.is_volume()
+            elif is_volume:
+                # non 3D volumes should always fail, regardless of is_volume value
+                is_volume = mrc.data is not None and len(mrc.data.shape) == 3
+            if not is_volume:                           #pragma: no cover
                 raise ValueError(
                     "MRC file {} is not a volumetric density.".format(filename))
             self.header = h = mrc.header.copy()
