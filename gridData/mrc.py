@@ -103,7 +103,7 @@ class MRC(object):
             self.filename = filename
         with mrcfile.open(filename) as mrc:
             if assume_volumetric:
-                # non 3D volumes should always fail, regardless of is_volume value
+                # non 3D volumes should always fail, regardless of assume_volumetric value
                 is_volume = mrc.data is not None and len(mrc.data.shape) == 3
             else:
                 is_volume = mrc.is_volume()
