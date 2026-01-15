@@ -98,7 +98,7 @@ class Grid(object):
       the data in `grid` is a 3D volume. If ``True``, assume `grid` is volumetric.
 
       .. Note:: `assume_volumetric` only has an effect when loading
-         MRC/CCP4 files. See :class:`gridData.MRC.MRC`
+         MRC/CCP4 files. See :class:`gridData.mrc.MRC`
 
       .. versionadded:: 1.1.0
 
