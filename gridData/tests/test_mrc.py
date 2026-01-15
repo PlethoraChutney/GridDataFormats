@@ -118,11 +118,9 @@ def test_mrcfile_volume_check():
         Grid(datafiles.ISPG_0)
 
 def test_mrcfile_volume_force():
-    Grid(datafiles.ISPG_0, is_volume=True)
+    grid = Grid(datafiles.ISPG_0, assume_volumetric=True)
+    assert_allclose(np.sum(grid.grid), 829.925)
 
-def test_mrcfile_force_fail():
-    with pytest.raises(ValueError, match="is not a volumetric density"):
-        Grid(datafiles.CCP4_1JZV, is_volume=False)
 
 class TestGridMRC():
     @pytest.fixture(scope="class")

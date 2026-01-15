@@ -93,6 +93,15 @@ class Grid(object):
       format fails. The default is ``None`` and normally the file
       format is guessed from the file extension.
 
+    assume_volumetric : bool (optional)
+      If ``False`` (default), check the file header to determine whether
+      the data in `grid` is a 3D volume. If ``True``, assume `grid` is volumetric.
+
+      .. Note:: `assume_volumetric` only has an effect when loading
+         MRC/CCP4 files. See :class:`gridData.MRC.MRC`
+
+      .. versionadded:: 1.1.0
+
     Raises
     ------
     TypeError
@@ -196,7 +205,7 @@ class Grid(object):
 
     def __init__(self, grid=None, edges=None, origin=None, delta=None,
                  metadata=None, interpolation_spline_order=3,
-                 file_format=None, **kwargs):
+                 file_format=None, assume_volumetric=False):
         # file formats are guessed from extension == lower case key
         self._exporters = {
             'DX': self._export_dx,
@@ -238,7 +247,7 @@ class Grid(object):
                     filename = str(grid)
 
             if filename is not None:
-                self.load(filename, file_format=file_format, **kwargs)
+                self.load(filename, file_format=file_format, assume_volumetric=assume_volumetric)
             else:
                 self._load(grid, edges, metadata, origin, delta)
 
@@ -547,30 +556,30 @@ class Grid(object):
         loader = self._get_loader(filename, file_format=file_format)
         loader(filename, **kwargs)
 
-    def _load_python(self, filename, **kwargs):
+    def _load_python(self, filename, assume_volumetric=False):
         with open(filename, 'rb') as f:
             saved = pickle.load(f)
         self._load(grid=saved['grid'],
                    edges=saved['edges'],
                    metadata=saved['metadata'])
 
-    def _load_mrc(self, filename, **kwargs):
+    def _load_mrc(self, filename, assume_volumetric=False):
         """Initializes Grid from a MRC/CCP4 file."""
-        mrcfile = mrc.MRC(filename, **kwargs)
+        mrcfile = mrc.MRC(filename, assume_volumetric=assume_volumetric)
         grid, edges = mrcfile.histogramdd()
         self._load(grid=grid, edges=edges, metadata=self.metadata)
         # Store header for access from Grid object (undocumented)
         # https://github.com/MDAnalysis/GridDataFormats/pull/100#discussion_r782604833
         self._mrc_header = mrcfile.header.copy()
 
-    def _load_dx(self, filename, **kwargs):
+    def _load_dx(self, filename, assume_volumetric=False):
         """Initializes Grid from a OpenDX file."""
         dx = OpenDX.field(0)
         dx.read(filename)
         grid, edges = dx.histogramdd()
         self._load(grid=grid, edges=edges, metadata=self.metadata)
 
-    def _load_plt(self, filename, **kwargs):
+    def _load_plt(self, filename, assume_volumetric=False):
         """Initialize Grid from gOpenMol plt file."""
         g = gOpenMol.Plt()
         g.read(filename)
